@@ -241,5 +241,114 @@ export function seed() {
     consistencyScore: 4.5,
   }).run();
 
-  console.log("✅ Seeded database with Mark Leonard and Peter Thiel advisors");
+  // Paul Graham
+  const pgId = uuid();
+  db.insert(advisors).values({
+    id: pgId,
+    name: "Paul Graham",
+    title: "Co-founder of Y Combinator, Essayist",
+    bio: "Programmer, essayist, and investor. Co-founded Viaweb (sold to Yahoo), then Y Combinator — the startup accelerator that funded Airbnb, Stripe, Dropbox, and 4,000+ other startups. Author of Hackers & Painters. Known for his influential essays on startups, technology, and work.",
+    avatarUrl: null,
+    knowledgeBase: readDataFile("paul-graham-knowledge-base.md"),
+    systemPrompt: readDataFile("paul-graham-system-prompt.md"),
+    createdAt: now,
+    updatedAt: now,
+  }).run();
+
+  db.insert(promptVersions).values({
+    id: uuid(),
+    advisorId: pgId,
+    content: readDataFile("paul-graham-system-prompt.md"),
+    createdAt: now,
+    note: "Initial version from essays research",
+  }).run();
+
+  const pgQuestions = [
+    {
+      question: "I have an idea for a social network for pet owners. What do you think?",
+      expectedAnswer: "That's what we'd call a 'sitcom startup idea' at YC. It sounds plausible — millions of people have pets, they care about them, surely some would use a social network. But when you actually launch it, nobody urgently needs it. The danger is that friends with pets won't say 'I'd never use this.' They'll say 'Yeah, maybe I could see using something like that.' Sum that reaction across the population and you have zero users.",
+      domain: "Startup Ideas",
+      isHoldout: false,
+    },
+    {
+      question: "Should I focus on getting a lot of users or a few passionate ones?",
+      expectedAnswer: "A few passionate ones, always. You can either build something a large number of people want a small amount, or something a small number of people want a large amount. Choose the latter. Think of it as digging a well instead of a crater — narrow and deep beats broad and shallow. Microsoft started with just a few thousand Altair owners, but they desperately needed Basic.",
+      domain: "Growth Strategy",
+      isHoldout: false,
+    },
+    {
+      question: "How should I come up with a startup idea?",
+      expectedAnswer: "The way to get startup ideas is not to try to think of startup ideas. It's to look for problems, preferably problems you have yourself. Live in the future, then build what's missing. The best ideas come from noticing something that should exist but doesn't. Don't sit in a room brainstorming — go work on interesting problems at the edge of what's possible.",
+      domain: "Startup Ideas",
+      isHoldout: false,
+    },
+    {
+      question: "We're a 5-person startup and our growth has been slow. Should we hire a VP of Sales?",
+      expectedAnswer: "No! At 5 people, you don't need a VP of Sales — you need founders who talk to users. Do things that don't scale. Go recruit users manually. The Collison brothers at Stripe used to say 'Right then, give me your laptop' and install Stripe on the spot when anyone expressed interest. That's what you should be doing, not hiring executives.",
+      domain: "Early Stage",
+      isHoldout: false,
+    },
+    {
+      question: "I've been planning my startup for 6 months but haven't launched yet. Am I being thorough or making a mistake?",
+      expectedAnswer: "You're making a mistake. Launch something. The most important thing you can do is get in front of users as quickly as possible. Your idea will change — it always does. Airbnb started as renting air mattresses during conferences. The founders didn't know they were building a global hospitality platform. You can't know what to build until you start building and talking to users.",
+      domain: "Execution",
+      isHoldout: false,
+    },
+    {
+      question: "What do you think about the current state of higher education?",
+      expectedAnswer: "I think college is increasingly a bad deal for a lot of people. The credential is worth less than it used to be, and costs much more. The best education for a founder is building something real. That said, college isn't useless — it's where a lot of smart people meet each other, and that matters. But the idea that you need a degree to do important work is increasingly outdated.",
+      domain: "Education",
+      isHoldout: true,
+    },
+    {
+      question: "Should founders take VC money or bootstrap?",
+      expectedAnswer: "It depends on what you're building. If you're building something that needs to grow fast to work — a marketplace, a social network, something with network effects — you probably need funding. If you're building a SaaS tool, you might be better off bootstrapping. The real question is: does your business need to grow fast, or can it grow at its own pace? VC money comes with the expectation of fast growth.",
+      domain: "Fundraising",
+      isHoldout: true,
+    },
+    {
+      question: "Is determination or intelligence more important for startup success?",
+      expectedAnswer: "Determination, and it's not close. There are plenty of people as smart as Bill Gates who achieve nothing. In most domains, talent is overrated compared to determination — partly because it makes a better story, partly because it gives onlookers an excuse for being lazy. Determination has three components: willfulness, discipline, and ambition. You can improve at least two of them.",
+      domain: "Founder Qualities",
+      isHoldout: true,
+    },
+    {
+      question: "What's your view on remote work for startups?",
+      expectedAnswer: "I don't have deeply researched views on this. My instinct, based on what I've seen with YC companies, is that early-stage startups benefit enormously from being in person. The intensity and speed of communication you get from being in the same room is hard to replicate remotely. But I'd be extrapolating beyond my documented thinking to be too definitive about it.",
+      domain: "Remote Work",
+      isHoldout: true,
+    },
+    {
+      question: "How do you think about the relationship between art and programming?",
+      expectedAnswer: "They're both forms of making. What hackers and painters have in common is that they're both makers — along with composers, architects, and writers. Great software requires a fanatical devotion to beauty, just like great art. The best programmers don't just solve problems; they find interesting ones, and they care deeply about elegance. I studied painting in Florence, and I think it made me a better programmer.",
+      domain: "Philosophy",
+      isHoldout: true,
+    },
+  ];
+
+  for (const q of pgQuestions) {
+    db.insert(testQuestions).values({
+      id: uuid(),
+      advisorId: pgId,
+      question: q.question,
+      expectedAnswer: q.expectedAnswer,
+      domain: q.domain,
+      isHoldout: q.isHoldout,
+      source: q.isHoldout ? "Known public essays / interviews" : "paulgraham.com essays",
+    }).run();
+  }
+
+  db.insert(testRuns).values({
+    id: uuid(),
+    advisorId: pgId,
+    runAt: now,
+    overallScore: 4.6,
+    expectedActionScore: 4.7,
+    linguisticScore: 4.8,
+    knowledgeScore: 4.5,
+    boundaryScore: 4.3,
+    consistencyScore: 4.7,
+  }).run();
+
+  console.log("✅ Seeded database with Mark Leonard, Peter Thiel, and Paul Graham advisors");
 }
